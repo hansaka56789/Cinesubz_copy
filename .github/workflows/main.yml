@@ -1,0 +1,47 @@
+name: Siaa Brain
+
+on:
+  workflow_dispatch:
+    inputs:
+      sender:
+        description: 'Sender Name'
+        required: true
+        default: 'Hansaka'
+      message:
+        description: 'Message'
+        required: true
+        default: 'Hi Siaa'
+      image_url:
+        description: 'Image URL (optional)'
+        required: false
+        default: ''
+
+  repository_dispatch:
+    types: [whatsapp_message, new_message]
+
+jobs:
+  run-siaa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Siaa Brain
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GREEN_API_TOKEN: ${{ secrets.GREEN_API_TOKEN }}
+          INSTANCE_ID: "710722761814"
+          SENDER: ${{ github.event.client_payload.sender || inputs.sender }}
+          MESSAGE: ${{ github.event.client_payload.content || inputs.message }}
+          IMAGE_URL: ${{ github.event.client_payload.image_url || inputs.image_url }}
+        run: python siaa_brain.py
